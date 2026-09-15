@@ -6,7 +6,7 @@ import {
   useState,
   type PropsWithChildren
 } from 'react';
-import { cn } from '@/lib/utils';
+import { cn, randomId } from '@/lib/utils';
 
 type ToastTone = 'info' | 'success' | 'error';
 
@@ -27,7 +27,7 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const pushToast = useCallback((toast: Omit<ToastItem, 'id'>) => {
-    const id = crypto.randomUUID();
+    const id = randomId();
     const nextToast = { ...toast, id };
     setToasts((current) => [...current, nextToast]);
 

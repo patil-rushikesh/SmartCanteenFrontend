@@ -31,7 +31,7 @@ import { appConfig } from '@/lib/config';
 import { formatCurrencyFromPaise, formatDateTime } from '@/lib/format';
 import { orderStatusMeta } from '@/lib/order';
 import { ensureRazorpayCheckout } from '@/lib/payments';
-import { uniqueBy } from '@/lib/utils';
+import { randomId, uniqueBy } from '@/lib/utils';
 import type { CartItem, MenuItem, OrderRecord, QrToken } from '@/types/api';
 
 type QrPreviewState = {
@@ -332,12 +332,23 @@ export const CustomerDashboard = () => {
     setIsPayingOrderId(order.id);
 
     try {
-      const payment = await api.customer.initiatePayment(order.id, crypto.randomUUID());
+      const payment = await api.customer.initiatePayment(order.id, randomId());
 
       if (!payment.providerOrderId) {
         throw new Error('Payment provider order id is missing.');
       }
 
+
+      if (appConfig.paymentMode === 'fake') {
+        await api.customer.verifyPayment({
+          providerOrderId: payment.providerOrderId,
+          providerPaymentId: `exam_pay_${randomId()}`,
+          signature: 'exam_fake_payment'
+        });
+        await queryClient.invalidateQueries({ queryKey: ['customer', 'orders'] });
+        pushToast({ title: 'Demo payment completed', description: 'No money was charged. Your QR code is ready.', tone: 'success' });
+        return;
+      }
 
       await ensureRazorpayCheckout();
 
