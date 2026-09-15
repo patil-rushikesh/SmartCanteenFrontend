@@ -2,7 +2,6 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string;
-  readonly VITE_BACKEND_BASE_URL?: string;
   readonly VITE_RAZORPAY_KEY_ID?: string;
   readonly VITE_PAYMENT_MODE?: 'razorpay' | 'fake';
   readonly VITE_ENABLE_QA_TOOLS?: 'true' | 'false';

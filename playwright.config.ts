@@ -31,7 +31,6 @@ export default defineConfig({
         'pnpm dev',
       env: {
         VITE_API_BASE_URL: 'http://127.0.0.1:8080/api',
-        VITE_BACKEND_BASE_URL: 'http://127.0.0.1:8080',
         VITE_PAYMENT_MODE: 'fake',
         VITE_ENABLE_QA_TOOLS: 'true'
       },
