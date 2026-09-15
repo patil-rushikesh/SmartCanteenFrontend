@@ -22,16 +22,4 @@ export const formatDateTime = (value?: string | Date | null) => {
   }).format(new Date(value));
 };
 
-export const formatDateShort = (value?: string | Date | null) => {
-  if (!value) {
-    return 'Not available';
-  }
-
-  return new Intl.DateTimeFormat('en-IN', {
-    dateStyle: 'medium'
-  }).format(new Date(value));
-};
-
 export const formatCompactNumber = (value: number) => compactFormatter.format(value);
-
-export const formatPhone = (value?: string | null) => value || 'Not provided';

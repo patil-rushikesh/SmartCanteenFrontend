@@ -12,3 +12,6 @@ tests
 playwright-report
 .env
 .env.*
+.github
+infra
+*.md

@@ -27,6 +27,7 @@ interface BarcodeDetectorConstructor {
 
 declare global {
   interface Window {
+    _env_?: Record<string, string | undefined>;
     BarcodeDetector?: BarcodeDetectorConstructor;
     Razorpay?: new (options: Record<string, unknown>) => {
       open: () => void;

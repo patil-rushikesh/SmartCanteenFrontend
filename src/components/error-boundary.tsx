@@ -1,4 +1,4 @@
-import React, { Component, type PropsWithChildren, type ReactNode } from 'react';
+import { Component, type PropsWithChildren, type ReactNode } from 'react';
 
 type AppErrorBoundaryState = {
   hasError: boolean;

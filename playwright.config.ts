@@ -20,15 +20,21 @@ export default defineConfig({
   webServer: [
     {
       command:
-        '/bin/zsh -lc "docker compose up -d --build app"',
-      cwd: '..',
+        'docker compose up -d --build app',
+      cwd: '../Backend',
       url: 'http://127.0.0.1:8080/api/health',
       reuseExistingServer: !process.env.CI,
       timeout: 240_000
     },
     {
       command:
-        '/bin/zsh -lc "VITE_API_BASE_URL=http://127.0.0.1:8080/api VITE_BACKEND_BASE_URL=http://127.0.0.1:8080 VITE_PAYMENT_MODE=fake VITE_ENABLE_QA_TOOLS=true pnpm dev"',
+        'pnpm dev',
+      env: {
+        VITE_API_BASE_URL: 'http://127.0.0.1:8080/api',
+        VITE_BACKEND_BASE_URL: 'http://127.0.0.1:8080',
+        VITE_PAYMENT_MODE: 'fake',
+        VITE_ENABLE_QA_TOOLS: 'true'
+      },
       cwd: '.',
       url: 'http://127.0.0.1:5173',
       reuseExistingServer: !process.env.CI,

@@ -28,11 +28,9 @@ import {
 } from '@/components/ui';
 import { ApiError, api } from '@/lib/api';
 import { appConfig } from '@/lib/config';
-import { formatCurrencyFromPaise, formatDateTime, formatDateShort } from '@/lib/format';
+import { formatCurrencyFromPaise, formatDateTime } from '@/lib/format';
 import { orderStatusMeta } from '@/lib/order';
-import {
-  ensureRazorpayCheckout
-} from '@/lib/payments';
+import { ensureRazorpayCheckout } from '@/lib/payments';
 import { uniqueBy } from '@/lib/utils';
 import type { CartItem, MenuItem, OrderRecord, QrToken } from '@/types/api';
 

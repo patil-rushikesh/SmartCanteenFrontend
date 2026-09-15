@@ -1,6 +1,3 @@
-import { appConfig } from '@/lib/config';
-import { sleep } from '@/lib/utils';
-
 let razorpayLoader: Promise<void> | null = null;
 
 export const ensureRazorpayCheckout = async () => {
@@ -30,8 +27,4 @@ export const ensureRazorpayCheckout = async () => {
   }
 
   return razorpayLoader;
-};
-
-export const waitForWebhookSettlement = async () => {
-  await sleep(350);
 };

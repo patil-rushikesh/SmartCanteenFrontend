@@ -1,5 +1,5 @@
 const getEnv = (key: string) => {
-  return (window as any)?._env_?.[key] || import.meta.env[key];
+  return window._env_?.[key] || import.meta.env[key];
 };
 
 export const appConfig = {
