@@ -17,8 +17,8 @@ export const BackendStatusCard = ({
   const statusQuery = useQuery({
     queryKey: ['system', 'public-status'],
     queryFn: async () => {
-      const [serviceInfo, health] = await Promise.all([api.system.serviceInfo(), api.system.health()]);
-      return { serviceInfo, health };
+      const health = await api.system.health();
+      return { health };
     },
     staleTime: 60_000
   });
@@ -45,7 +45,7 @@ export const BackendStatusCard = ({
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <StatusRow label="Service route" value={statusQuery.data.serviceInfo} />
+            <StatusRow label="Service" value="Smart Canteen Backend" />
             <StatusRow label="Heartbeat" value={formatDateTime(statusQuery.data.health.timestamp)} />
             <StatusRow label="API base" value={appConfig.apiBaseUrl} className="sm:col-span-2" />
           </div>

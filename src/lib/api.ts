@@ -66,15 +66,6 @@ const parseRawJson = async <TData>(response: Response): Promise<TData> => {
   return payload;
 };
 
-const parseText = async (response: Response) => {
-  const payload = await response.text().catch(() => '');
-  if (!response.ok) {
-    throw new ApiError(payload || 'Request failed', response.status);
-  }
-
-  return payload;
-};
-
 const refreshSession = async () => {
   const currentSession = readStoredSession();
   if (!currentSession?.refreshToken) {
@@ -160,14 +151,8 @@ const fetchPublicJson = async <TData>(url: string) => {
   return parseRawJson<TData>(response);
 };
 
-const fetchPublicText = async (url: string) => {
-  const response = await fetch(url);
-  return parseText(response);
-};
-
 export const api = {
   system: {
-    serviceInfo: () => fetchPublicText(appConfig.backendBaseUrl),
     health: () => fetchPublicJson<BackendHealth>(`${appConfig.apiBaseUrl}/health`)
   },
   auth: {

@@ -772,7 +772,7 @@ export const CustomerDashboard = () => {
                 <BackendStatusCard
                   className="mt-6"
                   title="Service health"
-                  description="The root and health routes stay visible here so QA can confirm the frontend is pointed at the expected backend."
+                  description="Live API health confirms that your workspace can reach the canteen service."
                 />
               </Panel>
             </div>

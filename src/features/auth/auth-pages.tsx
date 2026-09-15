@@ -142,7 +142,7 @@ export const LoginPage = () => {
           <div className="mt-8">
             <BackendStatusCard
               title="Public service checks"
-              description="The root and health routes are queried live here so sign-in issues are easier to separate from backend outages."
+              description="Live API health helps identify connection problems before you sign in."
             />
           </div>
 
