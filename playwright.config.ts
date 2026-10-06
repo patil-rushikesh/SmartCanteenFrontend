@@ -19,9 +19,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command:
-        'docker compose up -d --build app',
-      cwd: '../Backend',
+      command: 'docker compose up --build app',
+      cwd: process.env.PLAYWRIGHT_BACKEND_DIR ?? '../Backend',
       url: 'http://127.0.0.1:8080/api/health',
       reuseExistingServer: !process.env.CI,
       timeout: 240_000

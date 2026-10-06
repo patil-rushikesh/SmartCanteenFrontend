@@ -56,7 +56,11 @@ test('super admin manages colleges, managers, and token refresh', async ({ page,
   await expect(page.getByText('Tenant directory')).toBeVisible();
 
   await page.getByPlaceholder('Search by college, code, or email').fill(collegeName);
-  await page.getByRole('button', { name: 'Edit college' }).click();
+  await page
+    .locator('article')
+    .filter({ has: page.getByRole('heading', { name: collegeName }) })
+    .getByRole('button', { name: 'Edit college' })
+    .click();
   await page.getByLabel('Contact phone').fill('9888877777');
   await page.getByRole('button', { name: 'Save changes' }).click();
 
@@ -67,7 +71,7 @@ test('super admin manages colleges, managers, and token refresh', async ({ page,
   await page.getByLabel('Email').fill(managerEmail);
   await page.getByLabel('Phone').fill('9333344444');
   await page.getByLabel('Temporary password').fill('Manager@123');
-  await page.getByLabel('Canteen').selectOption({ index: 1 });
+  await page.getByRole('combobox', { name: 'Canteen' }).selectOption({ index: 1 });
   await page.locator('form').filter({ has: page.getByLabel('Temporary password') }).getByRole('button', { name: 'Assign manager' }).click();
 
   await expect(page.getByText(managerName)).toBeVisible();
@@ -75,8 +79,9 @@ test('super admin manages colleges, managers, and token refresh', async ({ page,
   await page.getByRole('button', { name: 'Colleges' }).click();
   await page.getByPlaceholder('Search by college, code, or email').fill(collegeName);
   await expect(page.locator('article').filter({ hasText: collegeName })).toBeVisible({ timeout: 10_000 });
-  await page.getByRole('button', { name: 'Deactivate' }).click();
-  await expect(page.getByText('Inactive')).toBeVisible({ timeout: 10_000 });
+  const collegeCard = page.locator('article').filter({ has: page.getByRole('heading', { name: collegeName }) });
+  await collegeCard.getByRole('button', { name: 'Deactivate', exact: true }).click();
+  await expect(collegeCard.getByText('Inactive')).toBeVisible({ timeout: 10_000 });
 });
 
 test('customer registration, fake payment, manager menu ops, QR scan, and fulfillment flow', async ({ page }) => {
@@ -110,7 +115,7 @@ test('customer registration, fake payment, manager menu ops, QR scan, and fulfil
   await page.getByRole('button', { name: 'Clear cart' }).click();
   await firstMenuCard.getByRole('button', { name: 'Add to cart' }).click();
   await page.getByRole('button', { name: 'Place order' }).click();
-  await page.getByRole('button', { name: 'Orders' }).click();
+  await page.getByRole('button', { name: /^Orders\b/ }).click();
   await expect(page.getByText('Order history', { exact: true })).toBeVisible();
 
   const firstOrderCard = page
@@ -127,7 +132,7 @@ test('customer registration, fake payment, manager menu ops, QR scan, and fulfil
   await orderCard.getByRole('button', { name: 'View QR' }).click();
 
   const qrToken = await page.getByLabel('Signed token').inputValue();
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('dialog', { name: 'Pickup QR' }).getByRole('button', { name: 'Close' }).click();
 
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page).toHaveURL(/\/login$/);
@@ -159,7 +164,7 @@ test('customer registration, fake payment, manager menu ops, QR scan, and fulfil
   await page.getByRole('button', { name: 'Validate QR' }).click();
   await expect(page.getByText('Last confirmed order')).toBeVisible({ timeout: 15_000 });
 
-  await page.getByRole('button', { name: 'Orders' }).click();
+  await page.getByRole('button', { name: /^Orders\b/ }).click();
   await page.getByPlaceholder('Search order, item, or customer').fill(orderHeading.replace('Order ', ''));
   const managerOrderCard = page.locator('article').filter({ hasText: orderHeading.replace('Order ', '') }).first();
 
@@ -177,11 +182,11 @@ test('customer registration, fake payment, manager menu ops, QR scan, and fulfil
 
   await page.getByRole('button', { name: 'Payments' }).click();
   await expect(page.getByText('Revenue and refund visibility')).toBeVisible();
-  await expect(page.getByText('SUCCESS')).toBeVisible();
+  await expect(page.getByText('SUCCESS', { exact: true }).first()).toBeVisible();
 
   await page.getByRole('button', { name: 'Sign out' }).click();
   await login(page, customerEmail, customerPassword);
-  await page.getByRole('button', { name: 'Orders' }).click();
+  await page.getByRole('button', { name: /^Orders\b/ }).click();
   await page.getByPlaceholder('Search by order, item, or status').fill(orderHeading.replace('Order ', ''));
   const customerOrderCard = page.locator('article').filter({ hasText: orderHeading.replace('Order ', '') }).first();
   await customerOrderCard.getByRole('button', { name: 'Report issue' }).click();
@@ -201,7 +206,7 @@ test('manager can refund a confirmed paid order and payment report reflects it',
 
   await firstMenuCard.getByRole('button', { name: 'Add to cart' }).click();
   await page.getByRole('button', { name: 'Place order' }).click();
-  await page.getByRole('button', { name: 'Orders' }).click();
+  await page.getByRole('button', { name: /^Orders\b/ }).click();
   await expect(page.getByText('Order history', { exact: true })).toBeVisible();
 
   const firstOrderCard3 = page
@@ -217,7 +222,7 @@ test('manager can refund a confirmed paid order and payment report reflects it',
   await expect(orderCard.getByText('QR Ready')).toBeVisible({ timeout: 20_000 });
   await orderCard.getByRole('button', { name: 'View QR' }).click();
   const qrToken = await page.getByLabel('Signed token').inputValue();
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('dialog', { name: 'Pickup QR' }).getByRole('button', { name: 'Close' }).click();
 
   await page.getByRole('button', { name: 'Sign out' }).click();
   await login(page, 'manager.alpha@smartcanteen.com', managerPassword);
@@ -228,7 +233,7 @@ test('manager can refund a confirmed paid order and payment report reflects it',
   await page.getByRole('button', { name: 'Validate QR' }).click();
   await expect(page.getByText('Last confirmed order')).toBeVisible({ timeout: 15_000 });
 
-  await page.getByRole('button', { name: 'Orders' }).click();
+  await page.getByRole('button', { name: /^Orders\b/ }).click();
   await page.getByPlaceholder('Search order, item, or customer').fill(orderHeading.replace('Order ', ''));
   const managerOrderCard = page.locator('article').filter({ hasText: orderHeading.replace('Order ', '') }).first();
   await managerOrderCard.getByRole('button', { name: 'Mark Refunded' }).click();
@@ -237,5 +242,5 @@ test('manager can refund a confirmed paid order and payment report reflects it',
   await expect(managerOrderCard.getByText('Refunded')).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole('button', { name: 'Payments' }).click();
-  await expect(page.getByText('REFUNDED')).toBeVisible();
+  await expect(page.locator('span').filter({ hasText: /^REFUNDED$/ }).first()).toBeVisible();
 });
