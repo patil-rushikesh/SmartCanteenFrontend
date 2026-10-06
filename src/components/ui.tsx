@@ -114,7 +114,12 @@ export const Modal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#1f241f]/45 px-4 py-8 backdrop-blur-sm">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      className="fixed inset-0 z-40 flex items-center justify-center bg-[#1f241f]/45 px-4 py-8 backdrop-blur-sm"
+    >
       <div className="w-full max-w-2xl rounded-[2rem] border border-white/60 bg-card p-6 shadow-soft">
         <div className="flex items-start justify-between gap-4">
           <div>
