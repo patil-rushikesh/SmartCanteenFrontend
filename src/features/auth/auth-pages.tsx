@@ -6,14 +6,7 @@ import { useToast } from '@/app/toasts';
 import { BackendStatusCard } from '@/components/backend-status-card';
 import { Button, EmptyState, Field, Input, Panel, Select, SkeletonBlock } from '@/components/ui';
 import { ApiError, api } from '@/lib/api';
-import { appConfig } from '@/lib/config';
 import type { RegistrationPayload } from '@/types/api';
-
-const demoAccounts = [
-  { label: 'Super Admin', email: 'owner@smartcanteen.com', password: 'SuperAdmin@123' },
-  { label: 'Alpha Manager', email: 'manager.alpha@smartcanteen.com', password: 'Manager@123' },
-  { label: 'Alpha Customer', email: 'student.alpha@smartcanteen.com', password: 'Customer@123' }
-];
 
 const authHeroCards = [
   'One role-aware workspace for platform, kitchen, and customer journeys.',
@@ -120,24 +113,7 @@ export const LoginPage = () => {
             </Button>
           </form>
 
-          {appConfig.enableQaTools ? (
-            <div className="mt-8 rounded-[1.75rem] border border-[#dcccae] bg-white/70 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7b6f5b]">Demo accounts</p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {demoAccounts.map((account) => (
-                  <button
-                    key={account.label}
-                    type="button"
-                    className="rounded-[1.4rem] border border-[#ddcfb3] bg-[#f8f1e3] px-4 py-3 text-left transition hover:border-accent/40 hover:bg-white"
-                    onClick={() => setFormState({ email: account.email, password: account.password })}
-                  >
-                    <p className="text-sm font-semibold text-ink">{account.label}</p>
-                    <p className="mt-1 text-xs text-[#6f695b]">{account.email}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
+
 
           <div className="mt-8">
             <BackendStatusCard
