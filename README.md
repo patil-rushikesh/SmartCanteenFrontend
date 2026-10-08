@@ -44,7 +44,8 @@ The backend repository owns shared AWS infrastructure and the exam guide at `../
 CI runs TypeScript builds, unit coverage, Chromium browser tests, container checks,
 and the SonarQube Cloud quality gate. Add `SONAR_TOKEN` to repository Actions secrets;
 the organization/project keys are in `sonar-project.properties`. Main releases are
-admitted 06:00–16:15 Asia/Kolkata to respect the 17:00 shutdown. A daily 06:15 run
-releases the latest passing main after overnight commits. Configure
+admitted only when the shared AWS `APPLICATION_ENABLED` flag is true. Use the
+backend repository’s **Application power** workflow to turn the app and database
+on or off. After startup, rerun **CI and ECS release** to deploy commits made while off. Configure
 `DEPLOY_ENVIRONMENT=production` only after the separate production infrastructure
 and HTTPS environment are ready. See the backend `infra/SRE.md` runbook.

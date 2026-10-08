@@ -4,8 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: '45 0 * * *' # 06:15 IST: release latest main after overnight shutdown
 permissions:
   contents: read
 concurrency:
@@ -79,19 +77,9 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  release-window:
-    runs-on: ubuntu-latest
-    outputs:
-      allowed: ${{ steps.window.outputs.allowed }}
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          persist-credentials: false
-      - id: window
-        run: python3 scripts/release-window.py
   deploy:
-    needs: [check, release-window]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.ENABLE_AWS_DEPLOYMENT == 'true' && needs.release-window.outputs.allowed == 'true'
+    needs: [check]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.ENABLE_AWS_DEPLOYMENT == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     environment: ${{ vars.DEPLOY_ENVIRONMENT || 'exam' }}
@@ -126,10 +114,16 @@ jobs:
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+      - name: Read application power flag
+        id: power
+        run: python3 scripts/release-power.py
       - uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd
+        if: steps.power.outputs.allowed == 'true'
         id: ecr
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+        if: steps.power.outputs.allowed == 'true'
       - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        if: steps.power.outputs.allowed == 'true'
         id: image
         with:
           context: .
@@ -139,21 +133,25 @@ jobs:
           cache-from: type=gha
           provenance: true
           sbom: true
-      - name: Check operating window before rollout
-        run: python3 scripts/release-window.py --check
+      - name: Check power flag before rollout
+        if: steps.power.outputs.allowed == 'true'
+        run: python3 scripts/release-power.py --check
       - name: Download the service task template
+        if: steps.power.outputs.allowed == 'true'
         run: |
           if [ -z "$ECS_TASK_TEMPLATE" ]; then
             ECS_TASK_TEMPLATE=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --query 'services[0].taskDefinition' --output text)
           fi
           aws ecs describe-task-definition --task-definition "$ECS_TASK_TEMPLATE" --query taskDefinition > task-definition.json
       - uses: aws-actions/amazon-ecs-render-task-definition@138c24f321fdbdf7edee4a685519d253cae2cdea
+        if: steps.power.outputs.allowed == 'true'
         id: task
         with:
           task-definition: task-definition.json
           container-name: frontend
           image: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}@${{ steps.image.outputs.digest }}
       - uses: aws-actions/amazon-ecs-deploy-task-definition@c465972ecbd160473f22e683363b422a5412a3de
+        if: steps.power.outputs.allowed == 'true'
         id: deploy
         with:
           task-definition: ${{ steps.task.outputs.task-definition }}
@@ -161,10 +159,12 @@ jobs:
           service: ${{ vars.ECS_SERVICE }}
           wait-for-service-stability: false
       - name: Scale and verify the new revision
+        if: steps.power.outputs.allowed == 'true'
         env:
           NEW_TASK_DEFINITION: ${{ steps.deploy.outputs.task-definition-arn }}
         run: |
-          aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --desired-count "$ECS_DESIRED_COUNT" > /dev/null
+          python3 scripts/release-power.py --check
+          # Capacity belongs to the power controller, so a release cannot undo OFF.
           aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"
           actual=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --query 'services[0].taskDefinition' --output text)
           test "$actual" = "$NEW_TASK_DEFINITION"
